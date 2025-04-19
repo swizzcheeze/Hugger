@@ -2,7 +2,7 @@
 
 A simple graphical desktop application written in Python With AI, Namely Gemini and a Touch of Claude this uses Tkinter to download single files or entire model repositories from the Hugging Face Hub. (Most this was wrtten with AI as-well)
 
-![Screenshot of the GUI version](images/hugger.jpg)
+<img src="images/hugger.jpg" alt="Screenshot of the GUI version" width="500">
 ![Screenshot of the CLI version in action](images/cli.jpg)
 
 
