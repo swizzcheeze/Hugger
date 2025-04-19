@@ -1,0 +1,13 @@
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.cache/
+ hf_models/ # Uncomment if you don't want models in git
