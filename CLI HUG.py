@@ -188,14 +188,16 @@ def run_model_download():
 
     # --- Get File Count ---
     num_files_str = ""
-    try:
-        with console.status(f"[cyan]Fetching model info for {repo_id}...[/]"):
-             info = model_info(repo_id=repo_id)
-        num_files = len(info.siblings)
-        num_files_str = f" ({num_files} files expected)"
-        console.print(f"  Model Info: [green]Found {num_files} files.[/green]")
-    except Exception as info_err:
-         console.print(f"  Model Info: [yellow]Warning: Could not get file count: {info_err}[/yellow]")
+    fetch_info = Confirm.ask(f"[cyan]Fetch file count before downloading? (may take a moment)[/cyan]", default=False)
+    if fetch_info:
+        try:
+            with console.status(f"[cyan]Fetching model info for {repo_id}...[/]"):
+                 info = model_info(repo_id=repo_id)
+            num_files = len(info.siblings)
+            num_files_str = f" ({num_files} files expected)"
+            console.print(f"  Model Info: [green]Found {num_files} files.[/green]")
+        except Exception as info_err:
+             console.print(f"  Model Info: [yellow]Warning: Could not get file count: {info_err}[/yellow]")
     # ---
 
     console.print(f"\n[magenta]Starting download...[/magenta]")
