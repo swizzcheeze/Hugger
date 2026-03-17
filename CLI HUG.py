@@ -89,6 +89,14 @@ DEFAULT_MODEL_REPO = "distilbert-base-uncased"
 
 # --- Helper Functions ---
 
+def validate_path(base_dir: Path, user_input_path: str) -> Path:
+    """Validates that the combined path remains within the base directory."""
+    base = base_dir.resolve()
+    target = (base / user_input_path).resolve()
+    if not str(target).startswith(str(base)):
+        raise ValueError(f"Security Alert: Path traversal attempt detected! Path: {user_input_path}")
+    return target
+
 def display_main_menu():
     """Prints the main menu options."""
     console.print(Panel(
@@ -147,6 +155,13 @@ def run_single_download():
     local_dir_str = Prompt.ask(f"[cyan]Enter Save Directory[/cyan]", default=str(DEFAULT_SAVE_DIR))
     local_dir = Path(local_dir_str)
 
+    try:
+        validate_path(local_dir, repo_id)
+        validate_path(local_dir, filename)
+    except ValueError as ve:
+        console.print(f"[bold red]Error:[/bold red] {ve}")
+        return
+
     if not ensure_directory(local_dir): return
 
     console.print(f"\n[magenta]Starting download...[/magenta]")
@@ -166,8 +181,8 @@ def run_single_download():
         console.rule()
         # Applying user's color preference for success message
         console.print(f"[#ADFF2F]Success![/#ADFF2F] File downloaded to:")
-        # Applying user's color preference for path and FIXING the closing tag
-        console.print(f"  [bold #F59E0B]{file_path}[/bold #F59E0B]") # <-- FIX HERE
+        # Applying user's color preference for path
+        console.print(f"  [bold #F59E0B]{file_path}[/bold #F59E0B]")
 
     except Exception as e:
         console.rule()
@@ -186,6 +201,12 @@ def run_model_download():
 
     if not ensure_directory(local_dir_base): return
 
+    try:
+        model_target_dir = validate_path(local_dir_base, repo_id)
+    except ValueError as ve:
+        console.print(f"[bold red]Error:[/bold red] {ve}")
+        return
+
     # --- Get File Count ---
     num_files_str = ""
     try:
@@ -202,10 +223,8 @@ def run_model_download():
     console.print(f"  Repo ID: [bold]{repo_id}[/bold]") # Keeping original bold for contrast
     console.print(f"  Save Dir Base: [bright_green]{local_dir_base}[/bright_green]")
     # FIXING closing tag typo here
-    console.print(f"  Workers: [bright_green]{workers}[/bright_green]") # <-- FIX HERE
+    console.print(f"  Workers: [bright_green]{workers}[/bright_green]")
     console.rule(f"Starting Download{num_files_str}")
-
-    model_target_dir = local_dir_base / repo_id
 
     try:
         model_path = snapshot_download(

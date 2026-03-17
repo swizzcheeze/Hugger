@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import filedialog, messagebox, scrolledtext, Menu
 import tkinter.font as tkFont
 import os
+from pathlib import Path
 import threading
 import queue
 import sys
@@ -46,6 +47,14 @@ except Exception as e:
     root_check.destroy(); sys.exit(1)
 
 # --- Threaded Download Functions ---
+def validate_path(base_dir: str, user_input_path: str) -> Path:
+    """Validates that the combined path remains within the base directory."""
+    base = Path(base_dir).resolve()
+    target = (base / user_input_path).resolve()
+    if not str(target).startswith(str(base)):
+        raise ValueError(f"Security Alert: Path traversal attempt detected! Path: {user_input_path}")
+    return target
+
 # Modified slightly to check cancellation flag (though cannot interrupt mid-download)
 def download_single_file_threaded(model_id, filename, local_dir, status_queue, cancel_event):
     """Downloads a single file in a thread and reports status via queue."""
@@ -53,6 +62,13 @@ def download_single_file_threaded(model_id, filename, local_dir, status_queue, c
     file_path = None # Initialize file_path
     try:
         if cancel_event.is_set(): raise InterruptedError("Download cancelled before start") # Check before starting
+
+        # Security validation for paths
+        validate_path(local_dir, model_id)
+        # Note: filename might contain subdirectories, validate it too if needed,
+        # but usually hf_hub_download handles it. For extra safety:
+        validate_path(local_dir, filename)
+
         status_queue.put(f"Starting download: {filename} from {model_id}...")
         os.makedirs(local_dir, exist_ok=True)
 
@@ -89,8 +105,12 @@ def download_entire_model_threaded(model_id, local_dir_base, num_workers, status
     model_path = None # Initialize
     try:
         if cancel_event.is_set(): raise InterruptedError("Download cancelled before start")
+
+        # Security validation for path construction
+        model_target_dir = validate_path(local_dir_base, model_id)
+
         status_queue.put(f"Starting download of entire model: {model_id} using {num_workers} workers...")
-        model_target_dir = os.path.join(local_dir_base, model_id); os.makedirs(model_target_dir, exist_ok=True)
+        os.makedirs(model_target_dir, exist_ok=True)
 
         # NOTE: snapshot_download itself cannot be easily interrupted by the flag here.
         model_path = snapshot_download(
