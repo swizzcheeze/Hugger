@@ -166,8 +166,8 @@ def run_single_download():
         console.rule()
         # Applying user's color preference for success message
         console.print(f"[#ADFF2F]Success![/#ADFF2F] File downloaded to:")
-        # Applying user's color preference for path and FIXING the closing tag
-        console.print(f"  [bold #F59E0B]{file_path}[/bold #F59E0B]") # <-- FIX HERE
+        # Applying user's color preference for path
+        console.print(f"  [bold #F59E0B]{file_path}[/]")
 
     except Exception as e:
         console.rule()
@@ -201,8 +201,7 @@ def run_model_download():
     console.print(f"\n[magenta]Starting download...[/magenta]")
     console.print(f"  Repo ID: [bold]{repo_id}[/bold]") # Keeping original bold for contrast
     console.print(f"  Save Dir Base: [bright_green]{local_dir_base}[/bright_green]")
-    # FIXING closing tag typo here
-    console.print(f"  Workers: [bright_green]{workers}[/bright_green]") # <-- FIX HERE
+    console.print(f"  Workers: [bright_green]{workers}[/]")
     console.rule(f"Starting Download{num_files_str}")
 
     model_target_dir = local_dir_base / repo_id
