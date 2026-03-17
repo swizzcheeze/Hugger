@@ -9,6 +9,7 @@ import sys
 import traceback
 import re
 import subprocess
+import pathlib
 
 # --- Color Scheme (Dark theme inspired by Hugging Face) ---
 BG_COLOR = '#2D3748'  # Dark Gray-Blue (Window, Frames)
@@ -82,6 +83,17 @@ def download_single_file_threaded(model_id, filename, local_dir, status_queue, c
     finally:
         status_queue.put("PROGRESS_END")
         status_queue.put("DONE_SINGLE") # Always signal completion
+
+def validate_path(path_str):
+    """Validates and resolves a directory path to prevent path traversal and ensure it's absolute."""
+    try:
+        path = pathlib.Path(path_str).resolve(strict=True)
+        # Check if the resolved path actually exists and is a directory
+        if not path.is_dir():
+            raise ValueError(f"Path is not a directory: {path}")
+        return path
+    except (FileNotFoundError, RuntimeError) as e:
+        raise ValueError(f"Invalid or non-existent path: {e}")
 
 def download_entire_model_threaded(model_id, local_dir_base, num_workers, status_queue, cancel_event):
     """Downloads an entire model in a thread and reports status via queue."""
@@ -263,13 +275,21 @@ class HuggingFaceDownloaderApp:
     def open_download_directory(self):
         dir_path = self.default_save_dir.get().strip()
         if not dir_path: messagebox.showwarning("Open Directory", "No directory path specified."); self.update_status_bar("No directory specified to open."); return
-        if not os.path.isdir(dir_path): messagebox.showwarning("Open Directory", f"Directory does not exist:\n{dir_path}"); self.update_status_bar("Selected directory does not exist."); return
+
         try:
-            self.update_status_bar(f"Opening directory: {dir_path}")
-            if sys.platform == "win32": os.startfile(os.path.realpath(dir_path))
-            elif sys.platform == "darwin": subprocess.call(["open", dir_path])
-            else: subprocess.call(["xdg-open", dir_path])
+            # Validate and resolve the path to prevent command injection / path traversal
+            valid_path = validate_path(dir_path)
+            safe_path_str = str(valid_path)
+
+            self.update_status_bar(f"Opening directory: {safe_path_str}")
+            if sys.platform == "win32": os.startfile(safe_path_str)
+            elif sys.platform == "darwin": subprocess.call(["open", safe_path_str])
+            else: subprocess.call(["xdg-open", safe_path_str])
             self.update_status_bar(f"Opened directory.")
+        except ValueError as e:
+            messagebox.showwarning("Open Directory", f"Invalid directory path:\n{e}")
+            self.update_status_bar("Selected directory is invalid.")
+            return
         except FileNotFoundError: messagebox.showerror("Open Directory Error", f"Could not find command to open directory."); self.update_status_bar("Error opening directory: command not found.")
         except Exception as e: messagebox.showerror("Open Directory Error", f"Failed to open directory.\nError: {e}"); self.update_status_bar("Error opening directory."); print(f"Error opening directory: {e}\n{traceback.format_exc()}")
 

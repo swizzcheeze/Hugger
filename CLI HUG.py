@@ -122,6 +122,14 @@ def handle_download_error(e, repo_id, filename=None):
         else:
              console.print(f"[dim]{e}[/dim]") # Print the error string for handled types
 
+def validate_path(path_str):
+    """Validates and resolves a directory path to prevent path traversal and ensure it's absolute."""
+    try:
+        path = Path(path_str).resolve(strict=False)
+        return path
+    except RuntimeError as e:
+        raise ValueError(f"Invalid path: {e}")
+
 def ensure_directory(path: Path):
     """Ensures a directory exists, creating it if necessary. Returns True on success."""
     try:
@@ -143,7 +151,11 @@ def run_single_download():
     if not filename: console.print("[yellow]Filename cannot be empty. Aborting.[/yellow]"); return
 
     local_dir_str = Prompt.ask(f"[cyan]Enter Save Directory[/cyan]", default=str(DEFAULT_SAVE_DIR))
-    local_dir = Path(local_dir_str)
+    try:
+        local_dir = validate_path(local_dir_str)
+    except ValueError as e:
+        console.print(f"[bold red]Error:[/] Invalid directory path: {e}")
+        return
 
     if not ensure_directory(local_dir): return
 
@@ -178,7 +190,11 @@ def run_model_download():
     if not repo_id: console.print("[yellow]Repo ID cannot be empty. Aborting.[/yellow]"); return
 
     local_dir_base_str = Prompt.ask(f"[cyan]Enter Base Save Directory[/cyan]", default=str(DEFAULT_SAVE_DIR))
-    local_dir_base = Path(local_dir_base_str)
+    try:
+        local_dir_base = validate_path(local_dir_base_str)
+    except ValueError as e:
+        console.print(f"[bold red]Error:[/] Invalid directory path: {e}")
+        return
 
     workers = IntPrompt.ask(f"[cyan]Enter Number of Workers[/cyan]", default=DEFAULT_WORKERS, choices=[str(w) for w in [1, 2, 3, 4, 6, 8]])
 
