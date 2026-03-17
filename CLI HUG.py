@@ -94,7 +94,7 @@ def display_main_menu():
         Text("1. Download Single File\n"
              "2. Download Entire Model\n"
              "3. Exit", justify="left"),
-        title="[bold cyan]Hugging Face Downloader Menu[/bold cyan]",
+        title="[bold cyan]Hugging Face Downloader Menu[/]",
         border_style="blue",
         padding=(1, 2)
     ))
@@ -104,18 +104,18 @@ def handle_download_error(e, repo_id, filename=None):
     if isinstance(e, HfHubHTTPError):
         if "404" in str(e) or "not found" in str(e).lower() or "repository not found" in str(e).lower():
             target = f"File '{filename}' in repo" if filename else "Repository"
-            console.print(f"[bold red]Error:[/bold red] {target} '{repo_id}' not found (404). Please check the names.")
+            console.print(f"[bold red]Error:[/] {target} '{repo_id}' not found (404). Please check the names.")
         else:
-            console.print(f"[bold red]Error:[/bold red] Network or server error downloading from '{repo_id}'.")
+            console.print(f"[bold red]Error:[/] Network or server error downloading from '{repo_id}'.")
             console.print(f"[dim]{e}[/dim]")
     elif isinstance(e, HFValidationError):
-         console.print(f"[bold red]Error:[/bold red] Invalid repository or file name: '{repo_id}'{f'/{filename}' if filename else ''}.")
+         console.print(f"[bold red]Error:[/] Invalid repository or file name: '{repo_id}'{f'/{filename}' if filename else ''}.")
          console.print(f"[dim]{e}[/dim]")
     elif isinstance(e, FileNotFoundError):
-         console.print(f"[bold red]Error:[/bold red] Could not create local directory. Check permissions.")
+         console.print(f"[bold red]Error:[/] Could not create local directory. Check permissions.")
          console.print(f"[dim]{e}[/dim]")
     else:
-        console.print(f"[bold red]An unexpected error occurred:[/bold red]")
+        console.print(f"[bold red]An unexpected error occurred:[/]")
         # Print traceback for unexpected errors only if they are not HfHubHTTPError or HFValidationError
         # as those are handled more gracefully above.
         if not isinstance(e, (HfHubHTTPError, HFValidationError)):
@@ -129,7 +129,7 @@ def ensure_directory(path: Path):
         path.mkdir(parents=True, exist_ok=True)
         return True
     except Exception as e:
-        console.print(f"[bold red]Error:[/bold red] Could not create directory '{path}'. Check permissions.")
+        console.print(f"[bold red]Error:[/] Could not create directory '{path}'. Check permissions.")
         console.print(f"[dim]{e}[/dim]")
         return False
 
@@ -166,7 +166,7 @@ def run_single_download():
         # Applying user's color preference for success message
         console.print(f"[#ADFF2F]Success![/#ADFF2F] File downloaded to:")
         # Applying user's color preference for path and FIXING the closing tag
-        console.print(f"  [bold #F59E0B]{file_path}[/bold #F59E0B]") # <-- FIX HERE
+        console.print(f"  [bold #F59E0B]{file_path}[/]")
 
     except Exception as e:
         console.rule()
@@ -174,7 +174,7 @@ def run_single_download():
 
 def run_model_download():
     """Prompts for model info and initiates download."""
-    console.rule("[bold blue]Download Entire Model[/bold blue]")
+    console.rule("[bold blue]Download Entire Model[/]")
     repo_id = Prompt.ask("[cyan]Enter Repository ID[/cyan]", default=DEFAULT_MODEL_REPO)
     if not repo_id: console.print("[yellow]Repo ID cannot be empty. Aborting.[/yellow]"); return
 
@@ -202,8 +202,7 @@ def run_model_download():
     console.print(f"\n[magenta]Starting download...[/magenta]")
     console.print(f"  Repo ID: [bold]{repo_id}[/bold]") # Keeping original bold for contrast
     console.print(f"  Save Dir Base: [bright_green]{local_dir_base}[/bright_green]")
-    # FIXING closing tag typo here
-    console.print(f"  Workers: [bright_green]{workers}[/bright_green]") # <-- FIX HERE
+    console.print(f"  Workers: [bright_green]{workers}[/bright_green]")
     console.rule(f"Starting Download{num_files_str}")
 
     model_target_dir = local_dir_base / repo_id
@@ -217,7 +216,7 @@ def run_model_download():
         console.rule()
         console.print(f"[green]Success![/green] Model downloaded to directory:")
         # Keeping original bold cyan for contrast
-        console.print(f"  [bold cyan]{model_path}[/bold cyan]")
+        console.print(f"  [bold cyan]{model_path}[/]")
 
     except Exception as e:
         console.rule()
@@ -229,14 +228,14 @@ def run_app():
     """Runs the main interactive menu loop."""
     while True:
         display_main_menu()
-        choice = Prompt.ask("[bold #F59E0B]Choose an option[/bold #F59E0B]", choices=["1", "2", "3"])
+        choice = Prompt.ask("[bold #F59E0B]Choose an option[/]", choices=["1", "2", "3"])
 
         if choice == '1':
             run_single_download()
         elif choice == '2':
             run_model_download()
         elif choice == '3':
-            console.print("[bold blue]Exiting program.[/bold blue]")
+            console.print("[bold blue]Exiting program.[/]")
             break
         else:
             console.print("[red]Invalid choice, please try again.[/red]")
@@ -253,7 +252,7 @@ if __name__ == "__main__":
         console.print("\n[yellow]Operation interrupted by user. Exiting.[/yellow]")
         sys.exit(1)
     except Exception as e:
-        console.print("[bold red]An unexpected critical error occurred:[/bold red]")
+        console.print("[bold red]An unexpected critical error occurred:[/]")
         # Print simpler error for known handled types, full traceback otherwise
         if not isinstance(e, (HfHubHTTPError, HFValidationError, FileNotFoundError)):
              console.print_exception(show_locals=False)
