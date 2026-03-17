@@ -371,7 +371,6 @@ if __name__ == "__main__":
     try:
         print("Starting GUI...")
         root = tk.Tk()
-        import re; import subprocess; import tkinter.font as tkFont
         app = HuggingFaceDownloaderApp(root)
         root.mainloop()
         print("GUI closed.")
