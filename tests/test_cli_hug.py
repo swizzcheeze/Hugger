@@ -8,6 +8,21 @@ cli_hug = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cli_hug)
 
 ensure_directory = cli_hug.ensure_directory
+validate_path = cli_hug.validate_path
+
+def test_validate_path_resolves():
+    """Test successful path resolution."""
+    path_str = "some_new_folder"
+    result = validate_path(path_str)
+    assert isinstance(result, Path)
+    assert result == Path(path_str).resolve()
+
+def test_validate_path_traversal():
+    """Test that path traversal attempts are resolved properly."""
+    # Test path resolution without checking existence
+    path_str = "base_folder/../target_folder"
+    result = validate_path(path_str)
+    assert result == Path("target_folder").resolve()
 
 def test_ensure_directory_success(tmp_path):
     """Test successful directory creation."""
